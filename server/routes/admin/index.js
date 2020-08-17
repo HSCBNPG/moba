@@ -39,4 +39,35 @@ module.exports = app => {
         req.Model = require(`../../models/${inflection.classify(req.params.resource)}`)
         next()
     }, router)
+
+    // 图片上传
+    const multer = require('multer')
+    const upload = multer({dest: __dirname + '/../../uploads'})
+    app.post('/admin/api/upload',upload.single('file'), async(req,res) => {
+        const file = req.file
+        file.url = "http://localhost:3000/uploads/" + file.filename
+        res.send(file)
+    })
+
+    app.post('/admin/api/login',async(req,res)=>{
+        const {username, password} = req.body
+        // 1.根据用户名找用户
+        const AdminUser = require('../../models/AdminUser')
+        //                              前缀“-”：强制排除， 前缀“+”：强制选择
+        const user =await AdminUser.findOne({username}).select("+password")
+        if(!user){
+            return res.status(422).send({
+                message:'用户不存在'
+            })
+        }
+        // 2.校验密码
+        // 使用bcrypt模块校验密码，compareSync用于校验明文和密文，参数1：明文，2：密文
+        const isValid = require('bcrypt').compareSync(password,user.password)
+        if(!isValid){
+            return res.status(422).send({
+                message: '密码或密码错误'
+            })
+        }
+        // 3.返回token
+    })
 }
