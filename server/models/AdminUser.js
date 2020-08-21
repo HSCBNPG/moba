@@ -5,7 +5,7 @@ const schema = new mongoose.Schema({   //创建模型结构
     password: { 
         type: String,
         select: false,  //被忽略查询
-        set(val){
+        set(val){  //使用加密模块加密
             return require('bcrypt').hashSync(val, 10)
         } 
     },
